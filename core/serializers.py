@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Post
+from core.models import Post, NASA
+
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,3 +10,7 @@ class PostSerializer(serializers.ModelSerializer):
             'description'
         )
 
+class NASASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NASA
+        fields = ('link','title','author','summary', 'added_ts','published', 'article_id', 'author_img_url', 'article_img_url')
