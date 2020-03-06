@@ -33,25 +33,33 @@ class TestView(APIView):
 
 class NASAView(APIView):
     def get(self, request, *args, **kwargs):
-        data = {
-            'title': 'title8',
-            'description': 'desc'
-        }
         feed = feedparser.parse('https://www.nasa.gov/rss/dyn/breaking_news.rss')
         for entry in feed.entries:
-            feed = {
-                'link': entry.link ,
-                'title': entry.title,
-                'author': '',
-                'summary': entry.summary,
-                'published': entry.published,
-                'article_id': entry.dc_identifier,
-                'author_img_url': entry.links[1].href,
-                'article_img_url': entry.links[1].href
-            }
-            serializer = NASASerializer(data=feed)
-            if serializer.is_valid():
-                serializer.save()
+            obj, created = NASA.objects.get_or_create(
+                link=entry['link'],
+                title=entry['title'],
+                author=feed['feed']['author'],
+                summary=entry['summary'],
+                published=entry['published'],
+                article_id=entry['dc_identifier'],
+                author_img_url='',
+                article_img_url=entry['links'][1]['href']
+            )
+
+        # for entry in feed.entries:
+        #     feed = {
+        #         'link': entry.link,
+        #         'title': entry.title,
+        #         'author': '',
+        #         'summary': entry.summary,
+        #         'published': entry.published,
+        #         'article_id': entry.dc_identifier,
+        #         'author_img_url': entry.links[1].href,
+        #         'article_img_url': entry.links[1].href
+        #     }
+        #     serializer = NASASerializer(data=feed)
+        #     if serializer.is_valid():
+        #         serializer.save()
 
         qs = NASA.objects.all()
         serializer = NASASerializer(qs, many=True)
