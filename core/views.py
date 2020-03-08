@@ -1,11 +1,20 @@
+
+# 
+# Change log
+# 20200308 Soumya Added feed for space.com
+# 
+
+
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 import feedparser
+import re
+# Import rest_framework
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import PostSerializer, NASASerializer
-from .models import Post, NASA
+from .serializers import PostSerializer, NASASerializer, SPACEDOTCOMSerializer
+from .models import Post, NASA, SPACEDOTCOM
 
 
 class TestView(APIView):
@@ -20,7 +29,7 @@ class TestView(APIView):
         qs = Post.objects.all()
         serializer = PostSerializer(qs, many=True)
         return Response(serializer.data)
-        
+
 
     def post(self, request, *args, **kwargs):
         serializer = PostSerializer(data=request.data)
@@ -46,70 +55,53 @@ class NASAView(APIView):
                 article_img_url=entry['links'][1]['href']
             )
 
-        # for entry in feed.entries:
-        #     feed = {
-        #         'link': entry.link,
-        #         'title': entry.title,
-        #         'author': '',
-        #         'summary': entry.summary,
-        #         'published': entry.published,
-        #         'article_id': entry.dc_identifier,
-        #         'author_img_url': entry.links[1].href,
-        #         'article_img_url': entry.links[1].href
-        #     }
-        #     serializer = NASASerializer(data=feed)
-        #     if serializer.is_valid():
-        #         serializer.save()
-
         qs = NASA.objects.all()
         serializer = NASASerializer(qs, many=True)
         return Response(serializer.data)        
 
-# def test_view(request):
-#     data = {
-#         'name':'Soumya',
-#         'age': 35
-#     }
-#     return JsonResponse(data)
+
+class SPACEDOTCOMView(APIView):
+    def get(self, request, *args, **kwargs):
+        article_img_url = ''
+        feed = feedparser.parse('https://www.space.com/feeds/all')
+        for entry in feed.entries:
+            for link in entry['links']:
+                if ('image' in link.type):
+                    article_img_url = link.href
+
+            obj, created = SPACEDOTCOM.objects.get_or_create(
+                link=entry['link'],
+                title=entry['title'],
+                author=entry['author'],
+                summary='',
+                published=entry['published'],
+                published_parsed=entry['published_parsed'],
+                article_id='',
+                author_img_url='',
+                article_img_url=article_img_url
+            )
+
+        qs = SPACEDOTCOM.objects.all()
+        serializer = SPACEDOTCOMSerializer(qs, many=True)
+        return Response(serializer.data)        
 
 
-# {
-#     "title": "Virginia Middle School Student Earns...", 
-#     "title_detail": {
-#         "type": "text/plain", 
-#         "language": "en", 
-#         "base": "http://www.nasa.gov/", 
-#         "value": "Virginia Middle School Student Earns..."}, 
-#         "links": [
-#             {
-#                 "rel": "alternate", 
-#                 "type": "text/html", 
-#                 "href": "http://www.nasa.gov/press-release/virginia-middle-school-student-earns-honor-of-naming-nasas-next-mars-rover"
-#             }, 
-#             {
-#                 "length": "2920751", 
-#                 "type": "image/png", 
-#                 "href": "http://www.nasa.gov/sites/default/files/styles/1x1_cardfeed/public/thumbnails/image/2020_rover_name_plate-1080_0.png?itok=sJNPzlao", 
-#                 "rel": "enclosure"
-#             }
-#         ], 
-#         "link": "http://www.nasa.gov/press-release/virginia-middle-school-student-earns-honor-of-naming-nasas-next-mars-rover", 
-#         "summary": "NASA's next Mars rover has a new name \u2013 Perseverance.", 
-#         "summary_detail": {
-#             "type": "text/html", 
-#             "language": "en", 
-#             "base": "http://www.nasa.gov/", 
-#             "value": "NASA's next Mars rover has a new name \u2013 Perseverance."
-#         }, 
-#         "id": "http://www.nasa.gov/press-release/virginia-middle-school-student-earns-honor-of-naming-nasas-next-mars-rover", 
-#         "guidislink": false, 
-#         "published": "Thu, 05 Mar 2020 13:18 EST", 
-#         "published_parsed": [2020, 3, 5, 18, 18, 0, 3, 65, 0], 
-#         "source": {
-#             "href": "http://www.nasa.gov/rss/dyn/breaking_news.rss", 
-#             "title": "NASA Breaking News"
-#         },
-#         "dc_identifier": "458672"
-#     }
-            
+def dummy(request):
+    article_img_url = ''
+    feed = feedparser.parse('https://www.space.com/feeds/all')
 
+    for entry in feed.entries:
+        for link in entry['links']:
+            if ('image' in link.type):
+                article_img_url = link.href
+        return JsonResponse({
+            'link': entry['link'],
+            'title': entry['title'],
+            'author': entry['author'],
+            'summary':'',
+            'published': entry['published'],
+            'published_parsed': entry['published_parsed'],
+            'article_id': '',
+            'author_img_url': '',
+            'article_img_url': article_img_url
+        }, safe=False)
