@@ -1,12 +1,14 @@
 
 # Change log
 # 20200308 Soumya Added feed for space.com
-
+# 20200308 Soumya Added BeautifulSoup to scrap summary from space.com 
 
 from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 import feedparser
 import re
+import requests 
+from bs4 import BeautifulSoup
 # Import rest_framework
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -58,12 +60,22 @@ class SPACEDOTCOMView(APIView):
             for link in entry['links']:
                 if ('image' in link.type):
                     article_img_url = link.href
+            # Space.com doesnt provide the summary content
+            # So, use beautiful soup to scrap the article
+            # We are fetching the 'complete' sentences within 500char limit
+            r = requests.get(entry['link'])
+            htmlContent = r.content
+            soup = BeautifulSoup(htmlContent, 'html.parser')
+            summary = str(soup.find(id="article-body").get_text())[0:500].split(".")
+            summary.pop()
+            summary = ".".join(summary)
+
 
             obj, created = SPACEDOTCOM.objects.get_or_create(
                 link=entry['link'],
                 title=entry['title'],
                 author=entry['author'],
-                summary='',
+                summary=summary,
                 published=entry['published'],
                 published_parsed=entry['published_parsed'],
                 article_id='',

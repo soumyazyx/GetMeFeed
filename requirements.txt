@@ -3,3 +3,6 @@ gunicorn
 django-heroku
 djangorestframework
 feedparser
+re
+bs4
+requests
