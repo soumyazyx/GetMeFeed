@@ -7,7 +7,7 @@ admin.autodiscover()
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path("dummy", dummy, name="dummy"),
+    path("dummy/", dummy, name="dummy"),
     path("", TestView.as_view(), name="test"),
     path("NASA/", NASAView.as_view(), name="NASA"),
     path("SPACEDOTCOM/", SPACEDOTCOMView.as_view(), name="SPACEDOTCOM")
