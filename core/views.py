@@ -1,8 +1,6 @@
 
-# 
 # Change log
 # 20200308 Soumya Added feed for space.com
-# 
 
 
 from django.shortcuts import render
@@ -19,17 +17,9 @@ from .models import Post, NASA, SPACEDOTCOM
 
 class TestView(APIView):
     def get(self, request, *args, **kwargs):
-        data = {
-            'title': 'title8',
-            'description': 'desc'
-        }
-        serializer = PostSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
         qs = Post.objects.all()
         serializer = PostSerializer(qs, many=True)
         return Response(serializer.data)
-
 
     def post(self, request, *args, **kwargs):
         serializer = PostSerializer(data=request.data)
@@ -87,21 +77,8 @@ class SPACEDOTCOMView(APIView):
 
 
 def dummy(request):
-    article_img_url = ''
-    feed = feedparser.parse('https://www.space.com/feeds/all')
-
-    for entry in feed.entries:
-        for link in entry['links']:
-            if ('image' in link.type):
-                article_img_url = link.href
-        return JsonResponse({
-            'link': entry['link'],
-            'title': entry['title'],
-            'author': entry['author'],
-            'summary':'',
-            'published': entry['published'],
-            'published_parsed': entry['published_parsed'],
-            'article_id': '',
-            'author_img_url': '',
-            'article_img_url': article_img_url
-        }, safe=False)
+    return JsonResponse({
+        'author': 'Soumya',
+        'NASA': '/NASA',
+        'SPACEDOTCOM': '/SPACEDOTCOM'
+    }, safe=False)
